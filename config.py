@@ -21,9 +21,9 @@ CALIBRATION = "platt"
 LAMBDA_BLEND = 0.6
 
 THRESHOLDS = {
-    "yellow": 0.60,
-    "orange": 0.70,
-    "red": 0.80,
+    "yellow": 0.20,
+    "orange": 0.30,
+    "red": 0.40,
     "delta": 0.05,
     "persistence_k": 3,
 }

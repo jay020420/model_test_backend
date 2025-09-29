@@ -3,7 +3,7 @@ from typing import Optional
 from preprocessing import load_and_join, normalize_bins
 from risk_aggregate import compute_all_risks
 from ensemble import weighted_ensemble, Calibrator
-from alerting import assign_alert
+from alerting import assign_alert_by_quantile
 from config import LAMBDA_BLEND
 
 
@@ -32,7 +32,12 @@ def run_pipeline(ds1: pd.DataFrame, ds2: pd.DataFrame, ds3: pd.DataFrame,
     p_cal = risks.get("p_model_cal", risks["p_model"]).fillna(0)
     risks["p_final"] = (LAMBDA_BLEND * p_cal) + ((1 - LAMBDA_BLEND) * risks["RiskScore"].fillna(0))
     risks["p_final"] = risks["p_final"].fillna(0)
-    risks["Alert"] = assign_alert(risks["p_final"].fillna(0))
+    risks["Alert"] = assign_alert_by_quantile(
+        risks,
+        group_cols=["HPSN_MCT_ZCD_NM"],
+        score_col="p_final",
+        q_y=0.80, q_o=0.90, q_r=0.97
+    )
 
     cols = ["ENCODED_MCT", "TA_YM", "Sales_Risk", "Customer_Risk", "Market_Risk", "RiskScore", "p_model", "p_final",
             "Alert"]
