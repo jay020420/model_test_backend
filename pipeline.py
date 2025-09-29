@@ -28,8 +28,11 @@ def run_pipeline(ds1: pd.DataFrame, ds2: pd.DataFrame, ds3: pd.DataFrame,
         p_cal = cal.transform(risks["p_model"].values)
         risks["p_model_cal"] = p_cal
 
-    risks["p_final"] = (LAMBDA_BLEND * p_cal) + ((1.0 - LAMBDA_BLEND) * risks["RiskScore"])
-    risks["Alert"] = assign_alert(risks["p_final"])
+    risks["p_model"] = risks.get("p_model", 0).fillna(0)
+    p_cal = risks.get("p_model_cal", risks["p_model"]).fillna(0)
+    risks["p_final"] = (LAMBDA_BLEND * p_cal) + ((1 - LAMBDA_BLEND) * risks["RiskScore"].fillna(0))
+    risks["p_final"] = risks["p_final"].fillna(0)
+    risks["Alert"] = assign_alert(risks["p_final"].fillna(0))
 
     cols = ["ENCODED_MCT", "TA_YM", "Sales_Risk", "Customer_Risk", "Market_Risk", "RiskScore", "p_model", "p_final",
             "Alert"]

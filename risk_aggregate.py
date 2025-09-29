@@ -12,8 +12,9 @@ def compute_all_risks(df: pd.DataFrame) -> pd.DataFrame:
     out = out.merge(m, on=["ENCODED_MCT", "TA_YM"], how="left")
 
     out["RiskScore"] = (
-            ALPHA * out["Sales_Risk"] +
-            BETA * out["Customer_Risk"] +
-            GAMMA * out["Market_Risk"]
+            ALPHA * out["Sales_Risk"].fillna(0) +
+            BETA * out["Customer_Risk"].fillna(0) +
+            GAMMA * out["Market_Risk"].fillna(0)
     )
+
     return out

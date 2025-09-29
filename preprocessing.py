@@ -7,23 +7,18 @@ KEY_YM = "TA_YM"
 
 
 def load_and_join(ds1: pd.DataFrame, ds2: pd.DataFrame, ds3: pd.DataFrame) -> pd.DataFrame:
-    a = ds1.copy()
-    b = ds2.copy()
-    c = ds3.copy()
-
-    for col in b.columns:
-        if col not in (KEY_MCT, KEY_YM):
-            b[col] = safe_nan(b[col])
-    for col in c.columns:
-        if col not in (KEY_MCT, KEY_YM):
-            c[col] = safe_nan(c[col])
+    a, b, c = ds1.copy(), ds2.copy(), ds3.copy()
 
     b = as_month_sorted(b, KEY_YM)
     c = as_month_sorted(c, KEY_YM)
 
+    for col in b.columns:
+        if col not in (KEY_MCT, KEY_YM): b[col] = safe_nan(b[col])
+    for col in c.columns:
+        if col not in (KEY_MCT, KEY_YM): c[col] = safe_nan(c[col])
+
     df = b.merge(c, on=[KEY_MCT, KEY_YM], how="left", suffixes=("", "_C"))
     df = df.merge(a, on=[KEY_MCT], how="left")
-
     return df
 
 
@@ -35,5 +30,8 @@ def normalize_bins(df: pd.DataFrame) -> pd.DataFrame:
     ]
     for col in bin_cols:
         if col in df.columns:
-            df[col + "_RANK"] = map_bin_to_rank(df[col])
+            r = map_bin_to_rank(df[col])
+            df[col + "_RANK"] = r.fillna(0.5)
+        else:
+            df[col + "_RANK"] = 0.5
     return df
