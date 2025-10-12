@@ -2,23 +2,6 @@
 
 머신러닝과 규칙 기반 위험도 분석을 통한 소상공인 경영 위험 조기 탐지 시스템
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
----
-
-## 📋 목차
-
-- [주요 기능](#주요-기능)
-- [시스템 구조](#시스템-구조)
-- [빠른 시작](#빠른-시작)
-- [설치 방법](#설치-방법)
-- [사용 방법](#사용-방법)
-- [API 문서](#api-문서)
-- [배포](#배포)
-- [개발](#개발)
-
 ---
 
 ## 🎯 주요 기능
