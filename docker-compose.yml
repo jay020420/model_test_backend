@@ -1,0 +1,96 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # FastAPI 백엔드
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sme_api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://sme_user:sme_password@postgres:5432/sme_warning
+      - REDIS_URL=redis://redis:6379/0
+      - BASE_DIR=/app
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - ENABLE_AUTH=true
+      - ENABLE_METRICS=true
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sme_network
+
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:15-alpine
+    container_name: sme_postgres
+    environment:
+      - POSTGRES_USER=sme_user
+      - POSTGRES_PASSWORD=sme_password
+      - POSTGRES_DB=sme_warning
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sme_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sme_network
+
+  # Redis 캐시
+  redis:
+    image: redis:7-alpine
+    container_name: sme_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sme_network
+
+  # Nginx 리버스 프록시 (선택사항)
+  nginx:
+    image: nginx:alpine
+    container_name: sme_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - sme_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  sme_network:
+    driver: bridge
